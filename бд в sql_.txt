@@ -1,0 +1,228 @@
+mysql> create database shop;
+Query OK, 1 row affected (0.00 sec)
+
+mysql> use shop;
+Database changed
+mysql>
+mysql> create table goods (
+    -> article varchar(8),
+    -> name varchar(100) NOT NULL,
+    -> sex enum('man', 'woman', 'unisex') NOT NULL,
+    -> _group varchar(16) NOT NULL,
+    -> _category varchar (32) NOT NULL,
+    -> _collection varchar(32) NOT NULL,
+    -> PRIMARY KEY (article));
+Query OK, 0 rows affected (0.06 sec)
+
+mysql>
+mysql> create table magazin (
+    -> article varchar(8) NOT NULL,
+    -> size varchar(6) NOT NULL,
+    -> quantity int NOT NULL,
+    -> place varchar(9) NOT NULL,
+    -> FOREIGN KEY (article) REFERENCES goods (article));
+Query OK, 0 rows affected (0.06 sec)
+
+mysql>
+mysql> create table personal (
+    -> id_person int AUTO_INCREMENT,
+    -> surname varchar(16) NOT NULL,
+    -> name varchar(16) NOT NULL,
+    -> patronymic varchar(16) NULL,
+    -> position varchar(32) NOT NULL,
+    -> PRIMARY KEY (id_person) );
+Query OK, 0 rows affected (0.06 sec)
+
+mysql>
+mysql> create table prices (
+    -> article varchar (8) NOT NULL,
+    -> date_price_changes date NOT NULL,
+    -> price double NOT NULL,
+    -> PRIMARY KEY (article, date_price_changes, price),
+    -> FOREIGN KEY (article) REFERENCES goods (article) );
+Query OK, 0 rows affected (0.06 sec)
+
+mysql>
+mysql> create table sales (
+    -> id_sale int(16) AUTO_INCREMENT,
+    -> id_assistant int,
+    -> article varchar(8),
+    -> quantity_realized_article int NOT NULL,
+    -> date_sale date NOT NULL,
+    -> time_sale time NOT NULL,
+    -> PRIMARY KEY (id_sale, article, id_assistant),
+    -> FOREIGN KEY (article) REFERENCES goods (article),
+    -> FOREIGN KEY (id_assistant) REFERENCES personal (id_person));
+Query OK, 0 rows affected (0.14 sec)
+
+mysql>
+mysql> create table supply (
+    -> id_supply int AUTO_INCREMENT,
+    -> id_who_took int,
+    -> date_incoming DATE NOT NULL,
+    -> volume_quantity int NOT NULL,
+    -> PRIMARY KEY (id_supply, id_who_took),
+    -> FOREIGN KEY (id_who_took) REFERENCES personal (id_person) );
+Query OK, 0 rows affected (0.09 sec)
+
+mysql>
+mysql> create table link_supply_and_goods (
+    -> id_supply int,
+    -> article varchar(8),
+    -> quantity_of_article int NOT NULL,
+    -> PRIMARY KEY (id_supply, article),
+    -> FOREIGN KEY (article) REFERENCES goods (article),
+    -> FOREIGN KEY (id_supply) REFERENCES supply (id_supply));
+Query OK, 0 rows affected (0.13 sec)
+
+mysql>
+mysql>
+mysql> INSERT INTO goods (article, name, sex, _group, _category, _collection) VA
+LUES
+    -> ('s111294', 'sneakers for walking', 'man', 'shoes', 'classics', 'NY style
+'),
+    -> ('s111293', 'sneakers for walking', 'woman', 'shoes', 'classics', 'NY sty
+le'),
+    -> ('u019882', 'panties for fitness dry skin', 'woman', 'underwear', 'sport'
+, 'must have'),
+    -> ('u018735', 'underpants for fitness dry skin', 'man', 'underwear', 'sport
+', 'must have'),
+    -> ('s234561', 'sneakers for running cool feet 1.0', 'man', 'shoes', 'sport'
+, 'run for life'),
+    -> ('s653398', 'sneakers for running cool feet 1.1', 'woman', 'shoes', 'spor
+t', 'run for
+    '>
+    '> life'),
+    -> ('h764713', 'shorts ocean', 'man', 'clothes', 'classics', 'NY style'),
+    -> ('t654320', 't-shirt NY', 'man', 'clothes', 'classics', 'NY style'),
+    -> ('so45362', 'socks NY', 'man', 'clothes', 'classics', 'NY style'),
+    -> ('so45361', 'socks NY', 'unisex', 'clothes', 'classics', 'NY style'),
+    -> ('j012903', 'jacket blue summer', 'man', 'clothes', 'classics', 'summer 2
+015'),
+    -> ('j012968', 'jacket pink summer', 'woman', 'clothes', 'classics', 'summer
+ 2015'),
+    -> ('b012967', 'bicini', 'woman', 'clothes','classics', 'summer 2015'),
+    -> ('sh12969', 'shorts for fitness', 'woman', 'clothes', 'sport', 'gym 2015'
+),
+    -> ('sh2968', 'shorts for fitness', 'man', 'clothes', 'sport', 'gym 2015'),
+
+    -> ('s062968', 'sneakers for fitness', 'man', 'shoes', 'sport', 'gym 2015'),
+
+    -> ('a062968', 'mat for fitness', 'unisex', 'accessories', 'sport', 'gym 201
+5');
+Query OK, 17 rows affected (0.01 sec)
+Records: 17  Duplicates: 0  Warnings: 0
+
+mysql>
+mysql> INSERT INTO magazin (article, size, quantity, place) VALUES
+    -> ('s111294', '42', '1', 'salesroom'),
+    -> ('s111294', '41', '3', 'stockroom'),
+    -> ('s111294', '40', '2', 'stockroom'),
+    -> ('s111294', '43', '2', 'stockroom'),
+    -> ('s111293', '36', '3', 'stockroom'),
+    -> ('s111293', '37', '2', 'salesroom'),
+    -> ('h764713', 'M', '3', 'stockroom'),
+    -> ('h764713', 's', '2', 'stockroom'),
+    -> ('h764713', 's', '1', 'salesroom'),
+    -> ('h764713', 'm', '2', 'salesroom'),
+    -> ('h764713', 'L', '1', 'salesroom'),
+    -> ('h764713', 'xs', '1', 'salesroom'),
+    -> ('sh12969', 'xs', '2', 'salesroom'),
+    -> ('sh12969', 's', '3', 'salesroom'),
+    -> ('sh12969', 'm', '2', 'salesroom'),
+    -> ('sh12969', 'l', '1', 'salesroom'),
+    -> ('sh2968', 'l', '1', 'salesroom'),
+    -> ('sh2968', 'xs', '2', 'salesroom'),
+    -> ('sh2968', 's', '3', 'salesroom'),
+    -> ('sh2968', 'm', '2', 'salesroom'),
+    -> ('s062968', '41', '1', 'salesroom'),
+    -> ('s062968', '42', '1', 'salesroom'),
+    -> ('s062968', '43', '1', 'salesroom'),
+    -> ('s062968', '44', '1', 'salesroom'),
+    -> ('a062968', '170*60', '2', 'salesroom'),
+    -> ('a062968', '170*60', '5', 'stockroom');
+Query OK, 26 rows affected (0.02 sec)
+Records: 26  Duplicates: 0  Warnings: 0
+
+mysql>
+mysql> INSERT INTO personal (surname, name, patronymic, position) VALUES
+    -> ('Petrov', 'Ivan', 'Sergeevich', 'Sales Specialist 1 category'),
+    -> ('Maratkanova', 'Ksenia', 'Andreevna', 'main'),
+    -> ('Dmitrieva', 'Julia', '', 'Sales Specialist 2 category'),
+    -> ('Bieber', 'Justin', '', 'Sales Specialist 3 category'),
+    -> ('Pivovarov', 'Sergey', 'Sergeevich', 'Manager'),
+    -> ('Smirnov', 'Andrei', 'Vasilievich', 'storekeeper');
+Query OK, 6 rows affected (0.02 sec)
+Records: 6  Duplicates: 0  Warnings: 0
+
+mysql>
+mysql> INSERT INTO prices (article, date_price_changes, price) VALUES
+    -> ('s111294', '2014-12-31', '1500'),
+    -> ('s111293', '2014-12-31', '1500'),
+    -> ('u019882', '2014-12-31', '500'),
+    -> ('u018735', '2014-12-31', '500'),
+    -> ('s234561', '2014-12-31', '2900'),
+    -> ('s653398', '2014-12-31', '2900'),
+    -> ('h764713', '2014-12-31', '1200' ),
+    -> ('t654320', '2014-12-31', '800' ),
+    -> ('t654320', '2015-01-01', '900' ),
+    -> ('so45362', '2014-12-31', '150'),
+    -> ('so45361', '2014-12-31', '150'),
+    -> ('j012903', '2014-12-31', '1300'),
+    -> ('j012903', '2015-01-01', '1500'),
+    -> ('j012968', '2014-12-31', '1300'),
+    -> ('b012967', '2014-12-31', '750'),
+    -> ('sh12969', '2014-12-31', '690'),
+    -> ('sh2968', '2014-12-31', '790'),
+    -> ('s062968', '2014-12-31', '3200'),
+    -> ('a062968', '2014-12-31', '1000');
+Query OK, 19 rows affected (0.01 sec)
+Records: 19  Duplicates: 0  Warnings: 0
+
+mysql>
+mysql> INSERT INTO sales (id_assistant,article, quantity_realized_article, date_
+sale, time_sale )
+    ->
+    -> VALUES
+    -> ('1', 'so45361', '1', '2014-12-31', '10:30:15'),
+    -> ('2', 'a062968', '1', '2014-12-31', '16:00:00'),
+    -> ('3', 'a062968', '1', '2014-12-31', '16:40:00'),
+    -> ('4', 's111294', '2', '2014-12-31', '16:50:00'),
+    -> ('5', 't654320', '1', '2015-01-01', '18:00:00');
+Query OK, 5 rows affected (0.03 sec)
+Records: 5  Duplicates: 0  Warnings: 0
+
+mysql>
+mysql> INSERT INTO supply (id_who_took, date_incoming,volume_quantity) VALUES
+    -> ('6', '2014-12-31', '23'),
+    -> ('1', '2015-01-01', '27');
+Query OK, 2 rows affected (0.02 sec)
+Records: 2  Duplicates: 0  Warnings: 0
+
+mysql>
+mysql> INSERT INTO link_supply_and_goods (id_supply, article, quantity_of_articl
+e) VALUES
+    -> ('1','s111294', '8'),
+    -> ('1','s111293', '5'),
+    -> ('1','h764713', '10'),
+    ->
+    -> ('2', 'sh12969', '8'),
+    -> ('2', 'sh2968', '8'),
+    -> ('2', 's062968', '4'),
+    -> ('2', 'a062968', '7');
+Query OK, 7 rows affected (0.02 sec)
+Records: 7  Duplicates: 0  Warnings: 0
+
+mysql> show tables;
++-----------------------+
+| Tables_in_shop        |
++-----------------------+
+| goods                 |
+| link_supply_and_goods |
+| magazin               |
+| personal              |
+| prices                |
+| sales                 |
+| supply                |
++-----------------------+
+7 rows in set (0.00 sec)

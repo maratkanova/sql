@@ -1,0 +1,171 @@
+ запросы 
+
+mysql> SELECT link_supply_and_goods.article, link_supply_and_goods.quantity_of_a
+rticle, prices.price FROM link_supply_and_goods, prices WHERE link_supply_and_go
+ods.article= prices.article AND id_supply= (SELECT id_supply FROM supply WHERE i
+d_supply=2);
++---------+---------------------+-------+
+| article | quantity_of_article | price |
++---------+---------------------+-------+
+| a062968 |                   7 |  1000 |
+| s062968 |                   4 |  3200 |
+| sh12969 |                   8 |   690 |
+| sh2968  |                   8 |   790 |
++---------+---------------------+-------+
+4 rows in set (0.09 sec)
+
+mysql> SELECT link_supply_and_goods.article, link_supply_and_goods.quantity_of_a
+rticle, prices.price, link_supply_and_goods.quantity_of_article*prices.price AS
+summa
+    -> FROM link_supply_and_goods, prices WHERE link_supply_and_goods.article= p
+rices.article AND id_supply= (SELECT id_supply FROM supply WHERE id_supply=2);
++---------+---------------------+-------+-------+
+| article | quantity_of_article | price | summa |
++---------+---------------------+-------+-------+
+| a062968 |                   7 |  1000 |  7000 |
+| s062968 |                   4 |  3200 | 12800 |
+| sh12969 |                   8 |   690 |  5520 |
+| sh2968  |                   8 |   790 |  6320 |
++---------+---------------------+-------+-------+
+4 rows in set (0.03 sec)
+
+mysql> SELECT goods.name, link_supply_and_goods.article, link_supply_and_goods.q
+uantity_of_article, prices.price, link_supply_and_goods.quantity_of_article*pric
+es.price AS
+    -> summa
+    -> FROM goods, link_supply_and_goods, prices WHERE goods.article=link_supply
+_and_goods.article and
+    -> link_supply_and_goods.article= prices.article AND id_supply= (SELECT id_s
+upply FROM supply WHERE id_supply=2);
++----------------------+---------+---------------------+-------+-------+
+| name                 | article | quantity_of_article | price | summa |
++----------------------+---------+---------------------+-------+-------+
+| mat for fitness      | a062968 |                   7 |  1000 |  7000 |
+| sneakers for fitness | s062968 |                   4 |  3200 | 12800 |
+| shorts for fitness   | sh12969 |                   8 |   690 |  5520 |
+| shorts for fitness   | sh2968  |                   8 |   790 |  6320 |
++----------------------+---------+---------------------+-------+-------+
+4 rows in set (0.00 sec)
+
+mysql> CREATE VIEW report_supply AS
+    ->
+    -> SELECT goods.name, link_supply_and_goods.article, link_supply_and_goods.q
+uantity_of_article, prices.price, link_supply_and_goods.quantity_of_article*pric
+es.price AS
+    ->    summa
+    ->    FROM goods, link_supply_and_goods, prices WHERE goods.article=link_sup
+ply_and_goods.article and link_supply_and_goods.article= prices.article AND id_s
+upply= (SELECT id_supply FROM supply WHERE id_supply=2);
+Query OK, 0 rows affected (0.14 sec)
+
+mysql> SELECT SUM(summa) FROM report_supply;
++------------+
+| SUM(summa) |
++------------+
+|      31640 |
++------------+
+1 row in set (0.02 sec)
+
+
+
+
+mysql> SELECT goods.name, sales.article
+    -> FROM goods, sales
+    -> WHERE goods.article=sales.article AND sales.id_assistant=(SELECT id_perso
+n FROM personal WHERE
+    ->
+    -> personal.surname='Maratkanova');
++-----------------+---------+
+| name            | article |
++-----------------+---------+
+| mat for fitness | a062968 |
++-----------------+---------+
+1 row in set (0.00 sec)
+
+
+mysql> SELECT goods.name, sales.article, sales.quantity_realized_article, sales.
+date_sale, sales.time_sale
+    -> FROM goods, sales
+    -> WHERE goods.article=sales.article AND sales.id_assistant=(SELECT id_perso
+n FROM personal WHERE
+    ->
+    -> personal.surname='Maratkanova');
++-----------------+---------+---------------------------+------------+----------
+-+
+| name            | article | quantity_realized_article | date_sale  | time_sale
+ |
++-----------------+---------+---------------------------+------------+----------
+-+
+| mat for fitness | a062968 |                         1 | 2014-12-31 | 16:00:00
+ |
++-----------------+---------+---------------------------+------------+----------
+-+
+1 row in set (0.00 sec)
+
+
+mysql> SELECT goods.name, sales.article, sales.quantity_realized_article, sales.
+date_sale, prices.price
+    -> FROM goods, sales, prices
+    -> WHERE prices.article=sales.article AND goods.article=sales.article AND sa
+les.id_assistant=(SELECT id_person FROM personal WHERE
+    ->
+    -> personal.surname='Maratkanova');
++-----------------+---------+---------------------------+------------+-------+
+| name            | article | quantity_realized_article | date_sale  | price |
++-----------------+---------+---------------------------+------------+-------+
+| mat for fitness | a062968 |                         1 | 2014-12-31 |  1000 |
++-----------------+---------+---------------------------+------------+-------+
+1 row in set (0.00 sec)
+
+
+mysql> SELECT goods.name, goods.article, prices.price
+    ->     FROM goods, prices
+    ->    WHERE prices.article=goods.article AND
+    -> goods.article=(SELECT article FROM magazin WHERE magazin.size='40');
++----------------------+---------+-------+
+| name                 | article | price |
++----------------------+---------+-------+
+| sneakers for walking | s111294 |  1500 |
++----------------------+---------+-------+
+1 row in set (0.02 sec)
+
+
+Создание процедуры 
+
+mysql> DELIMITER //
+mysql>
+mysql> CREATE PROCEDURE add_pers (s varchar(16), n varchar(16), p varchar(16), p
+o varchar(32))
+    -> begin insert into personal (surname, name, patronymic, position) value (s
+, n, p, po);
+    -> end
+    -> //
+Query OK, 0 rows affected (0.13 sec)
+
+mysql> call add_pers('petrosyan', 'syan', '', 'cleaner')//
+Query OK, 1 row affected (0.20 sec)
+mysql> select * from personal//
+
++-----------+-------------+--------+-------------+-----------------------------+
+
+| id_person | surname     | name   | patronymic  | position                    |
+
++-----------+-------------+--------+-------------+-----------------------------+
+
+|         1 | Petrov      | Ivan   | Sergeevich  | Sales Specialist 1 category |
+
+|         2 | Maratkanova | Ksenia | Andreevna   | main                        |
+
+|         3 | Dmitrieva   | Julia  |             | Sales Specialist 2 category |
+
+|         4 | Bieber      | Justin |             | Sales Specialist 3 category |
+
+|         5 | Pivovarov   | Sergey | Sergeevich  | Manager                     |
+
+|         6 | Smirnov     | Andrei | Vasilievich | storekeeper                 |
+
+|         7 | petrosyan   | syan   |             | cleaner                     |
+
++-----------+-------------+--------+-------------+-----------------------------+
+
+7 rows in set (0.06 sec)
