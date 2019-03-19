@@ -1,0 +1,183 @@
+Вариант 44
+Задание 1.Создать таблицы:
+Таблица 1. Справочник цехов-изготовителей
+Структура таблицы: Код цеха, Наименование цеха (два цеха)
+Таблица 2. Справочник характеристик продукции
+Структура таблицы: Код продукции, Наименование продукции, Единица измерения, Код цеха-изготовителя, Группа продукции, Цена (рублей за единицу) (10 записей, группа продукции- высший и первый сорт)
+Таблица 3. План выпуска продукции в натуральном выражении
+Структура таблицы: Код продукции, Количество, Номер месяца (продукция выпускается 1,2,3 месяцы)
+Задание 2. Построить диаграмму.
+Задание 3. Создать SQL- запрос для подсчета количества наименований продукции, входящих в одну группы. Запрос содержит поля: Группа продукции, Количество продукции.
+Задание 4. Создать SQL- запрос подсчитывающий общий ассортимент продукции, выпускающий цехом, в том числе ассортимент продукции высшего сорта. Запрос содержит поля: Наименование цеха, Ассортимент, Высший сорт.
+Задание 5. Сформируйте справку по первому месяцу для первого цеха о выпуске продукции. Запрос содержит поля: Наименование продукции, Единица измерения, Группа продукции, Цена, Количество, Стоимость.
+Задание 6. С помощью SQL- запроса сформировать План выпуска продукции за квартал в стоимостном выражении, включив в запрос поля: Код продукции, Наименование продукции, Стоимость.
+Задание 7. Создать SQL- запрос на увеличение цены, выпускаемой продукции в 0,5 раза.
+Задание 8. Составить SQL- запрос, вычисляющий среднее количество продукции выпускаемой цехом за квартал. Запрос содержит поля: Наименование продукции, Среднее количество продукции.
+Задание 9. Составить SQL- запрос для подсчета стоимости продукции по каждой Группе продукции. Запрос содержит поля: Группа продукции, Стоимость продукции.
+Задание 10. ВывестиНаименование продукции количество, которой ниже среднего количества, выпускаемого цехом.
+
+create database tovar;
+use tovar;
+
+create table guild ( 
+kod_guild enum ('01', '02') NOT NULL, 
+name_guild varchar(50) NOT NULL, 
+PRIMARY KEY (kod_guild));
+
+create table product (
+id varchar(2) NOT NULL,
+name varchar(100) NOT NULL,
+units varchar(2) NOT NULL,
+kod_guild enum ('01','02') NOT NULL,
+_group enum ('extra', 'first') NOT NULL,
+price double NOT NULL,
+PRIMARY KEY (id),
+FOREIGN KEY (kod_guild) REFERENCES guild (kod_guild));
+
+create table plan (
+id varchar(3) NOT NULL, 
+quantity varchar(5) NOT NULL,
+month enum ('1','2','3') NOT NULL,
+FOREIGN KEY (id) REFERENCES product (id)); 
+
+
+INSERT INTO guild (kod_guild, name_guild) VALUES
+('01','big'),
+('02','small');
+
+
+INSERT INTO product (id, name, units, kod_guild, _group, price) VALUES 
+('01', 'breadstuff cool',          'kg','01', 'extra', '200'), 
+('02', 'breadstuff great',         'kg','01', 'extra', '210'), 
+('03', 'breadstuff new',           'kg','02', 'first', '190'), 
+('04', 'breadstuff for child',     'kg','02', 'extra', '250'), 
+('05', 'breadstuff the best',      'kg','02', 'extra', '250'), 
+('06', 'breadstuff for puncakes',  'kg','01', 'first', '230'), 
+('07', 'breadstuff for cakes',     'kg','01', 'first', '215'), 
+('08', 'breadstuff for everybody', 'kg','01', 'first', '190'), 
+('09', 'breadstuff for you',       'kg','01', 'extra', '200'),
+('10', 'breadstuff for animals',   'kg','01', 'first', '150');
+
+INSERT INTO plan (id, quantity, month) VALUES 
+('01', '42', '1'), 
+('02', '41', '1'), 
+('03', '40', '1'), 
+('04', '43', '1'), 
+('05', '36', '1'), 
+('06', '37', '1'),
+('07', '37', '1'),
+('08', '39', '1'),
+('09', '56', '1'),
+('10', '0', '1'), 
+
+('01', '40', '2'), 
+('02', '45', '2'), 
+('03', '46', '2'), 
+('04', '45', '2'), 
+('05', '29', '2'), 
+('06', '36', '2'),
+('07', '33', '2'),
+('08', '32', '2'),
+('09', '58', '2'),
+('10', '0', '2'), 
+
+('01', '43', '3'), 
+('02', '44', '3'), 
+('03', '48', '3'), 
+('04', '40', '3'), 
+('05', '32', '3'), 
+('06', '34', '3'),
+('07', '38', '3'),
+('08', '35', '3'),
+('09', '57', '3'),
+('10', '32', '3');
+
+
+задание 3
+SELECT _group, count(id) FROM product GROUP BY _group;
+
+задание 4
+SELECT guild.name_guild, product.name, product._group FROM guild, product WHERE  product._group='extra' AND guild.kod_guild=product.kod_guild;
+
+задание 5
+запрос только за 1 месяц 
+SELECT product.name, product.units, product._group, product.price, plan.quantity, product.price*plan.quantity AS stoimost 
+FROM product, plan 
+WHERE plan.id=product.id and plan.month='1' ;
+
+запрос только за 1 месяц с 1 цеха 
+
+SELECT product.name, product.units, product._group, product.price, plan.quantity, product.price*plan.quantity AS stoimost 
+FROM product, plan 
+WHERE plan.id=product.id and plan.month='1' and product.kod_guild=( SELECT  kod_guild from guild where kod_guild='01');
+
+Задание 6
+декартовое произведение, запрос без подсчета общей суммы
+select product.id, product.name, product.price*plan.quantity AS stoimost
+ FROM product, plan 
+WHERE product.id=plan.id;
+
+
+select product.id, product.name,  SUM(product.price*plan.quantity)
+ FROM product, plan 
+WHERE product.id=plan.id GROUP BY product.id;
+
+ 
+Задание 7 увеличить цену
+UPDATE product SET price=price*0.5;
+ чтобы посмотреть измененную цену: 
+SELECT price FROM product;
+
+работает!
+для примера(подсчет в др таблице, чтоб не запутаться)
+create table forprice (cost varchar(10) not null);
+INSERT INTO forprice (cost) VALUES ('10');
+UPDATE forprice SET cost=cost*0.5;
+  
+задание 8
+SELECT product.id, product.name, AVG(plan.quantity) AS srednee
+FROM product, plan WHERE plan.id=product.id
+GROUP BY plan.id ;
+
+задание 9
+для подсчета в количестве 1 единицы каждого наименования продукции
+SELECT product._group, SUM(product.price) FROM product GROUP BY product._group;
+
+задание 10!
+В результате проверки должно получиться "... for animals"
+______________________
+не относится к работе
+Запрос на обновление данных в поле
+update plan SET quantity='0' where plan.id='10' and plan.month='2'; 
+________________________
+
+SELECT product.name FROM product, plan WHERE product.id=plan.id  GROUP BY plan.id ..... (select SUM(quantity) from plan GROUP BY plan.id) < (SELECT AVG(quantity) FROM plan) ;
+
+(And, in не подходят)
+
+Сумма по группам 
+select SUM(quantity) from plan group by plan.id;
++---------------+
+| SUM(quantity) |
++---------------+
+|           125 |
+|           130 |
+|           134 |
+|           128 |
+|            97 |
+|           107 |
+|           108 |
+|           106 |
+|           171 |
+|            32 |
++---------------+
+10 rows in set (0.00 sec)
+
+Среднее значение 
+ SELECT AVG(quantity) FROM plan;
++-------------------+
+| AVG(quantity)     |
++-------------------+
+| 37.93333333333333 |
++-------------------+
+1 row in set (0.00 sec)

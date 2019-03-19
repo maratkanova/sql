@@ -1,0 +1,198 @@
+Вариант 47
+Задание 1.Создать таблицы:
+Таблица 1. Справочник видов работ
+Структура таблицы: Код вида работ, Наименование вида работ, Единица измерения
+Таблица 2. Справочник расценок
+Структура таблицы: Код работы, Код вида работ, Наименование работы, Расценка (рублей за единицу измерения)
+Таблица 3. Справочник строительных объектов
+Структура таблицы: Код объекта, Наименование объекта, Населенный пункт, Адрес объекта, Квартал, Год(Дата начала работ)
+Таблица 4. Объемы работ на объекте
+Структура таблицы: Код объекта, Код работы, Физический объем работы (в единицах измерения)
+Задание 2. Построить диаграмму.
+Задание 3. С помощью SQL- запроса подсчитать количество объектов в одном городе. Запрос содержит поля: Населенный пункт, Количество.
+Задание 4. Создать SQL- запрос, позволяющийпросматривать сведения об объектах и стоимости работ. Запрос содержит поля: Наименование объекта, Количество работ, Выполнено на сумму. Данные упорядочить по убыванию
+Задание 5.Создать SQL- запрос, позволяющий подсчитать итоговую стоимость всех работ каждого вида. Запрос содержит поля: Наименование вида работ, Итоговая стоимость
+Задание 6. Составить SQL- запрос на создание новой таблицы Справочник окончания работ, имеющей поля: Код объекта, Квартал, Год.
+Задание 7. Составить SQL- запрос на добавление записей в таблицу Справочник окончания работ.
+Задание 8. Составить SQL- запрос для подсчета количества месяцев строительства. Запрос содержит поля: Наименование объекта, Количество месяцев.
+Задание 9. С помощью SQL- запроса вывести список объектов, срок окончания которых предусмотрен в 3 квартале этого года.Наименование объекта,Квартал, Год.
+Задание 10. Вывести Код вида работ с расценкой выше средней.
+
+create database building;
+use building;
+
+create table kindwork ( 
+kod_kindwork varchar (5) NOT NULL, 
+name_kindwork varchar(100) NOT NULL,
+units varchar(4) NOT NULL,
+PRIMARY KEY (kod_kindwork));
+
+create table object (
+kod_object varchar(3) NOT NULL,
+name_object varchar(100) NOT NULL,
+locality varchar(50) NOT NULL,
+address_object varchar(100) NOT NULL,
+kvartal enum ('1', '2', '3','4') NOT NULL,
+year year(4) NOT NULL,
+PRIMARY KEY (kod_object));
+
+create table pricelist (
+kod_work varchar(3) NOT NULL, 
+kod_kindwork varchar(5) NOT NULL,
+name_work varchar(100) NOT NULL,
+price double NOT NULL,
+PRIMARY KEY (kod_work),
+FOREIGN KEY (kod_kindwork) REFERENCES kindwork (kod_kindwork)); 
+
+create table volume (
+kod_object varchar(3) NOT NULL, 
+kod_work varchar(3) NOT NULL,
+fizvolumework varchar(4) NOT NULL,
+FOREIGN KEY (kod_object) REFERENCES object (kod_object), 
+FOREIGN KEY (kod_work) REFERENCES pricelist (kod_work));
+
+INSERT INTO kindwork (kod_kindwork, name_kindwork, units) VALUES
+('1','difficult','sht'),
+('2','easy',     'sht'),
+('3','medium',   'sht');
+
+
+INSERT INTO object (kod_object, name_object, locality,address_object,kvartal,year) VALUES 
+('01', 'church',    'spb','sablinskaya 49',          '1', '2013'), 
+('02', 'house',     'spb','kazanskaya 10',           '2', '2012'), 
+('03', 'tower',     'msk','moscovskiy prospect 45',  '2', '2011'), 
+('04', 'bridge',    'Crimea','street 2',             '3', '2015'), 
+('05', 'villa',     'Anapa','big street 4',          '4', '2014'), 
+('06', 'skyscraper','msk','prospect Lenina 1',       '4', '2014');
+
+INSERT INTO pricelist (kod_work, kod_kindwork, name_work, price)  VALUES 
+('a1', '1', 'na vesu','1000'), 
+('a2', '1', 'krisha','1050'), 
+('a3', '1', 'fundament','1200'), 
+('a4', '2', 'plitka','500'), 
+('a5', '2', 'vodoprovod','600'), 
+('a6', '2', 'svet','400'),
+('a7', '3', 'rosetka','100'),
+('a8', '3', 'oboi','300'),
+('a9', '3', 'pokraska','200'),
+('a10','1', 'most','1200');
+
+INSERT INTO volume (kod_object, kod_work, fizvolumework) VALUES
+('01', 'a1', '1'), 
+('01', 'a9', '1'), 
+('01', 'a4', '1'), 
+
+('02', 'a5', '1'), 
+('03', 'a1', '1'), 
+('04', 'a1', '1');
+
+
+задание 3
+SELECT object.locality, count(kod_object) FROM object GROUP BY object.locality;
+
+задание 4
+Запрос без суммы
+
+SELECT object.name_object, COUNT(volume.kod_work) FROM object, volume  
+WHERE object.kod_object=volume.kod_object GROUP BY volume.kod_object;
++-------------+------------------------+
+| name_object | COUNT(volume.kod_work) |
++-------------+------------------------+
+| church      |                      3 |
+| house       |                      1 |
+| tower       |                      1 |
+| bridge      |                      1 |
++-------------+------------------------+
+4 rows in set (0.00 sec)
+
+Запрос с суммой, но не упорядоченный
+
+SELECT object.name_object, COUNT(volume.kod_work) AS QUANTITY,   SUM(volume.fizvolumework*pricelist.price) AS na_summu
+    FROM object, volume, pricelist   
+      WHERE object.kod_object=volume.kod_object 
+      AND pricelist.kod_work=volume.kod_work 
+      GROUP BY volume.kod_object; 
++-------------+----------+----------+
+| name_object | QUANTITY | na_summu |
++-------------+----------+----------+
+| church      |        3 |     1700 |
+| house       |        1 |      600 |
+| tower       |        1 |     1000 |
+| bridge      |        1 |     1000 |
++-------------+----------+----------+
+4 rows in set (0.00 sec)
+
+Упорядоченный по убыванию
+
+SELECT object.name_object, COUNT(volume.kod_work) AS QUANTITY,   
+SUM(volume.fizvolumework*pricelist.price) AS na_summu
+   FROM object, volume, pricelist
+    WHERE object.kod_object=volume.kod_object
+     AND pricelist.kod_work=volume.kod_work
+    GROUP BY volume.kod_object ORDER BY SUM(volume.fizvolumework*pricelist.price) DESC;
++-------------+----------+----------+
+| name_object | QUANTITY | na_summu |
++-------------+----------+----------+
+| church      |        3 |     1700 |
+| tower       |        1 |     1000 |
+| bridge      |        1 |     1000 |
+| house       |        1 |      600 |
++-------------+----------+----------+
+4 rows in set (0.00 sec)
+
+задание 5
+SELECT kindwork.name_kindwork, SUM(pricelist.price) FROM kindwork, pricelist
+WHERE kindwork.kod_kindwork=pricelist.kod_kindwork GROUP BY pricelist.kod_kindwork;
+
+Задание 6
+create table finishwork (
+kod_object varchar(3) NOT NULL,
+kvartal enum ('1', '2', '3','4') NOT NULL,
+year year(4) NOT NULL);
+
+Задание 7 
+INSERT INTO finishwork (kod_object, kvartal,year) VALUES 
+('01',  '2', '2013'), 
+('02',  '3', '2012'), 
+('03',  '3', '2011'), 
+('04',  '4', '2015'), 
+('05',  '1', '2015'), 
+('06',  '1', '2015');
+  
+задание 8!
+SELECT object.name_object FROM object...
+
+задание 9
+SELECT object.name_object, finishwork.kvartal, finishwork.year 
+FROM object, finishwork
+WHERE finishwork.kvartal='3'AND finishwork.year='2015' AND  finishwork.kod_object=object.kod_object;
+
+В нашем случае это пустой запрос, так как у нас нет объекта, срок окончания работ на котором предусмотрен в 3 квартале текущего года.
+
+Поэтому для проверки возьмем 4 квартал текущего года.
+
+SELECT object.name_object, finishwork.kvartal, finishwork.year 
+FROM object, finishwork
+WHERE finishwork.kvartal='4'AND finishwork.year='2015' AND  finishwork.kod_object=object.kod_object;
+
+
+задание 10
+Запрос на сгруппированный вывод  кода вида работ
+SELECT kindwork.kod_kindwork FROM kindwork, pricelist  WHERE kindwork.kod_kindwork=pricelist.kod_kindwork  GROUP BY pricelist.kod_kindwork;
++--------------+
+| kod_kindwork |
++--------------+
+| 1            |
+| 2            |
+| 3            |
++--------------+
+3 rows in set (0.00 sec)
+
+
+SELECT kod_kindwork FROM pricelist  WHERE   pricelist.price > (select AVG(price) FROM pricelist) GROUP BY kod_kindwork;
++--------------+
+| kod_kindwork |
++--------------+
+| 1            |
++--------------+
+1 row in set (0.00 sec)
